@@ -62,8 +62,7 @@ func (ScrapePerfReplicationGroupMember) Scrape(ctx context.Context, db *sql.DB, 
 	defer perfReplicationGroupMemeberRows.Close()
 
 	var (
-		memberId, memberHost, memberState, memberRole     string
-		memberPort                                        uint64
+		memberId, memberHost, memberPort, memberState, memberRole string
 	)
 
 	for perfReplicationGroupMemeberRows.Next() {
@@ -75,7 +74,7 @@ func (ScrapePerfReplicationGroupMember) Scrape(ctx context.Context, db *sql.DB, 
 		}
 		ch <- prometheus.MustNewConstMetric(
 			performanceSchemaReplicationGroupMemberStatsTransInQueueDesc, prometheus.CounterValue, 1 ,
-			memberId, memberHost, float64(memberPort), memberState, memberRole,
+			memberId, memberHost, memberPort, memberState, memberRole,
 		)
 	}
 	return nil
