@@ -73,7 +73,7 @@ func (ScrapePerfReplicationGroupMember) Scrape(ctx context.Context, db *sql.DB, 
 			return err
 		}
 		ch <- prometheus.MustNewConstMetric(
-			performanceSchemaReplicationGroupMemberStatsTransInQueueDesc, prometheus.CounterValue, 1 ,
+			performanceSchemaReplicationGroupMemberDesc, prometheus.GaugeValue, 1 ,
 			memberId, memberHost, memberPort, memberState, memberRole,
 		)
 	}
