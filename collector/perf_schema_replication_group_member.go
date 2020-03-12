@@ -31,7 +31,7 @@ var (
 	performanceSchemaReplicationGroupMemberDesc = prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, performanceSchema, "members"),
 		"mysql replication group members",
-		[]string{"member_id", "MEMBER_HOST", "MEMBER_PORT", "MEMBER_STATE", "MEMBER_ROLE"}, nil,
+		[]string{"member_id", "member_host", "member_port", "member_state", "member_role"}, nil,
 	)
 )
 
@@ -75,7 +75,7 @@ func (ScrapePerfReplicationGroupMember) Scrape(ctx context.Context, db *sql.DB, 
 		}
 		ch <- prometheus.MustNewConstMetric(
 			performanceSchemaReplicationGroupMemberStatsTransInQueueDesc, prometheus.CounterValue, 1 ,
-			memberId, memberHost, memberPort, memberState, memberRole,
+			memberId, memberHost, float64(memberPort), memberState, memberRole,
 		)
 	}
 	return nil
