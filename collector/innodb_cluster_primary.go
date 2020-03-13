@@ -71,8 +71,8 @@ func (ScrapeInnodbClusterPrimary) Scrape(ctx context.Context, db *sql.DB, ch cha
 			return err
 		}
 		ch <- prometheus.MustNewConstMetric(
-			InnodbClusterPrimaryDesc, prometheus.CounterValue, float64(primaryCount)
-		),
+			InnodbClusterPrimaryDesc, prometheus.CounterValue, float64(primaryCount),
+		)
 	}
 	return nil
 }
