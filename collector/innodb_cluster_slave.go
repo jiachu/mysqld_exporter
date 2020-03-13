@@ -21,61 +21,61 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-const innodbClusterPrimaryQuery = `
+const innodbClusterSlaveQuery = `
 	SELECT COUNT(*) FROM performance_schema.replication_group_members WHERE 
-		member_id = (SELECT variable_value FROM performance_schema.global_status WHERE variable_name = 'group_replication_primary_member') AND MEMBER_STATE = 'ONLINE';
+		MEMBER_ROLE = "SECONDARY" AND MEMBER_STATE = 'ONLINE';
 	`
 
 // Metric descriptors.
 var (
-	InnodbClusterPrimaryDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, InnodbClusterSchema, "primary"),
-		"display primary num", nil, nil,
+	InnodbClusterSlaveDesc = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, InnodbClusterSchema, "slave"),
+		"display slave num", nil, nil,
 	)
 )
 
 // ScrapeReplicationGroupMemberStats collects from `performance_schema.replication_group_member_stats`.
-type ScrapeInnodbClusterPrimary struct{}
+type ScrapeInnodbClusterSlave struct{}
 
 // Name of the Scraper. Should be unique.
-func (ScrapeInnodbClusterPrimary) Name() string {
-	return InnodbClusterSchema + ".primary"
+func (ScrapeInnodbClusterSlave) Name() string {
+	return InnodbClusterSchema + ".slave"
 }
 
 // Help describes the role of the Scraper.
-func (ScrapeInnodbClusterPrimary) Help() string {
-	return "Collect metrics from performance_schema.replication_group_member and global variables"
+func (ScrapeInnodbClusterSlave) Help() string {
+	return "Collect metrics from performance_schema.replication_group_members"
 }
 
 // Version of MySQL from which scraper is available.
-func (ScrapeInnodbClusterPrimary) Version() float64 {
+func (ScrapeInnodbClusterSlave) Version() float64 {
 	return 8.0
 }
 
 // Scrape collects data from database connection and sends it over channel as prometheus metric.
-func (ScrapeInnodbClusterPrimary) Scrape(ctx context.Context, db *sql.DB, ch chan<- prometheus.Metric, logger log.Logger) error {
-	innodbClusterPrimaryRows, err := db.QueryContext(ctx, innodbClusterPrimaryQuery)
+func (ScrapeInnodbClusterSlave) Scrape(ctx context.Context, db *sql.DB, ch chan<- prometheus.Metric, logger log.Logger) error {
+	innodbClusterSlaveRows, err := db.QueryContext(ctx, innodbClusterSlaveQuery)
 	if err != nil {
 		return err
 	}
-	defer innodbClusterPrimaryRows.Close()
+	defer innodbClusterSlaveRows.Close()
 
 	var (
-		primaryCount uint64
+		slaveCount uint64
 	)
 
-	for innodbClusterPrimaryRows.Next() {
-		if err := innodbClusterPrimaryRows.Scan(
-			&primaryCount,
+	for innodbClusterSlaveRows.Next() {
+		if err := innodbClusterSlaveRows.Scan(
+			&slaveCount,
 		); err != nil {
 			return err
 		}
 		ch <- prometheus.MustNewConstMetric(
-			InnodbClusterPrimaryDesc, prometheus.GaugeValue, float64(primaryCount),
+			InnodbClusterSlaveDesc, prometheus.GaugeValue, float64(slaveCount),
 		)
 	}
 	return nil
 }
 
 // check interface
-var _ Scraper = ScrapeInnodbClusterPrimary{}
+var _ Scraper = ScrapeInnodbClusterSlave{}
